@@ -32,6 +32,11 @@ MY_ENTER_PRICE_ETH = float(os.environ['MY_ENTER_PRICE_ETH'])
 MY_PURCHASE_PRICE_ETH = float(os.environ['MY_PURCHASE_PRICE_ETH'])
 ETH_PURCHASED_NUMBER = float(os.environ['ETH_PURCHASED_NUMBER'])
 
+# csvにデータを入れる際のカラム(1行目)
+columns_list = list()
+#columns= pd.Index(columns_list)
+csv_values = list()
+
 def send_to_discord(content):
     contents    = {
         'botname': '',      #表示されるbot名.空だとDiscodeの標準
@@ -109,35 +114,61 @@ def build_diff_content():
     dt_now = datetime.datetime.now()
     dt_now_d = "TIME: {}".format(dt_now.strftime('%Y-%m-%d %H:%M:%S'))
     printlist.append(dt_now_d)
+    columns_list.append("TIME")
+    csv_values.append(dt_now.strftime('%Y-%m-%d %H:%M:%S'))
 
     eth_enter_price_d = "ETH MY ENTER price: {}".format(MY_ENTER_PRICE_ETH)
     printlist.append(eth_enter_price_d)
+    columns_list.append("ETH MY ENTER price")
+    csv_values.append(MY_ENTER_PRICE_ETH)
 
     printlist.append(slit)
 
     eth_price = get_coin_m_price(ETHUSD_SYMBOL)
     eth_price_d = "ETHUSD(永久) price: {}".format(eth_price)
     printlist.append(eth_price_d)
+    columns_list.append("ETHUSD(永久)")
+    csv_values.append(eth_price)
 
     eth_price09 = get_coin_m_price(ETH202209_SYMBOL)
     eth_price09_d = "ETHU2022(0930) price: {}".format(eth_price09)
     printlist.append(eth_price09_d)
+    columns_list.append("ETHU2022(0930)")
+    csv_values.append(eth_price09)
 
     eth_price12 = get_coin_m_price(ETH202212_SYMBOL)
     eth_price12_d = "ETHUSD(1230) price: {}".format(eth_price12)
     printlist.append(eth_price12_d)
+    columns_list.append("ETHUSD(1230)")
+    csv_values.append(eth_price12)
 
     printlist.append(slit)
 
     eth_diff09 = round(eth_price - eth_price09, 1)
     eth_diff09_d = "ETHUSD(0930) Diff: {}".format(eth_diff09)
     printlist.append(eth_diff09_d)
+    columns_list.append("ETHUSD(0930) Diff")
+    csv_values.append(eth_diff09)
 
     eth_diff12 = round(eth_price - eth_price12,1)
     eth_diff12_d = "ETHUSD(1230) Diff: {}".format(eth_diff12)
     printlist.append(eth_diff12_d)
+    columns_list.append("ETHUSD(1230) Diff")
+    csv_values.append(eth_diff12)
 
     printlist.append(slit)
+
+    print(".........writting to csv...........")
+    # Pandas組み立て
+    # print(csv_values)
+    # print(columns_list)
+    df = pd.DataFrame([csv_values],columns=columns_list)
+    # csv読み込み&追記
+    # headerが何度も書き込まれないようにチェックする
+    with open('./eth_kairi_recode.csv', mode = 'a') as f:
+        df.to_csv(f, header=f.tell()==0,index = False)
+    
+    f.close()
 
     return printlist
 
