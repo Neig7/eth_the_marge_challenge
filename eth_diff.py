@@ -1,9 +1,7 @@
 # coding: UTF-8
-
 # before run this, pip3 install requered
 # pip3 install python-binance
 # pip3 install binance-futures-connector
-
 from binance.cm_futures import CMFutures
 from binance.client import Client
 import pandas as pd
@@ -15,15 +13,14 @@ import os
 
 #BINANCE_API_KEY = '' #BINANCEのAPIキーをセット
 #BINANCE_API_SECRET = '' #BINANCEのシークレットキーをセット
-SPOT_URL = 'https://api.binance.com/api/v3/trades?symbol=ETHUSDT'
+ETHUSDT = 'https://api.binance.com/api/v3/trades?symbol=ETHUSDT'
 ETH_SYMBOL = "https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT"
-
 WEBHOOK_URL  = os.environ['WEBHOOK_URL'] #botのwebhookURL
 
 # Coin-M先物のシンボルリストは以下のAPIにアクセスするとわかる。ブラウザで良い
 # Base URLとURIが異なる
 # https://dapi.binance.com/dapi/v1/exchangeInfo
-COIN_M_SPOT_URL = "https://dapi.binance.com/dapi/v1/ticker/price"
+COIN_M_URL = "https://dapi.binance.com/dapi/v1/ticker/price"
 ETHUSD_SYMBOL = "https://dapi.binance.com/dapi/v1/ticker/price?symbol=ETHUSD_PERP"
 ETH202209_SYMBOL = "https://dapi.binance.com/dapi/v1/ticker/price?symbol=ETHUSD_220930"
 ETH202212_SYMBOL = "https://dapi.binance.com/dapi/v1/ticker/price?symbol=ETHUSD_221230"
@@ -35,27 +32,27 @@ MY_ENTER_PRICE_ETH = float(os.environ['MY_ENTER_PRICE_ETH'])
 MY_PURCHASE_PRICE_ETH = float(os.environ['MY_PURCHASE_PRICE_ETH'])
 ETH_PURCHASED_NUMBER = float(os.environ['ETH_PURCHASED_NUMBER'])
 
-def send_discord(content):
-    main_content    = {
-        'username': '',      #表示されるbot名
-        'avatar_url': '',    #表示するアイコンのURL
-        'content': content   #discordに表示される内容
+def send_to_discord(content):
+    contents    = {
+        'botname': '',      #表示されるbot名.空だとDiscodeの標準
+        'avatar_url': '',    #アイコンURL.空だとDiscodeの標準
+        'content': content   #投稿したい本文
     }
     headers = {'Content-Type': 'application/json'}
 
     try:
-        res = requests.post(WEBHOOK_URL, json.dumps(main_content), headers=headers)
+        res = requests.post(WEBHOOK_URL, json.dumps(contents), headers=headers)
     except Exception as e:
         print(e)
         return False
 
 def get_spot_price():
-    r = requests.get(SPOT_URL).json()
+    r = requests.get(ETHUSDT).json()
     cm_futures_client = CMFutures(key=BINANCE_API_KEY, secret=BINANCE_API_SECRET)
     asset = pd.DataFrame(cm_futures_client.account()['assets'])
-    unrealized_profit = asset[asset['asset'].str.contains('ETH', regex=True)]['unrealizedProfit'].astype(float).values
+    futures_profit = asset[asset['asset'].str.contains('ETH', regex=True)]['unrealizedProfit'].astype(float).values
 
-    return unrealized_profit[0]*float(r[0]['price'])
+    return futures_profit[0]*float(r[0]['price'])
 
 # Coim_m 汎用
 def get_coin_m_price(symbol):
@@ -69,7 +66,6 @@ def get_coin_m_price(symbol):
     price: float = r_2json[0]['price']
     #print("Current ETH price{}",current_eth)
     return float(price)
-
 
 def get_current_eth_price():
     r_eth_price = requests.get(ETH_SYMBOL)
@@ -90,7 +86,6 @@ def calc_my_profit():
     final_profit = get_spot_price() + genbutu_profit()
     return final_profit
 
-
 CURRENCY_RATES_API = "https://dotnsf-fx.herokuapp.com"
 def get_usdjpy_rate():
     r_currency_rates = requests.get(CURRENCY_RATES_API)
@@ -102,8 +97,6 @@ def get_usdjpy_rate():
 
 def convert_usd_jpy(usd: float):
     return usd * get_usdjpy_rate()
-
-
 
 # 別ファイルから実行用
 # リストを返すs
@@ -148,7 +141,6 @@ def build_diff_content():
 
     return printlist
 
-
 if __name__ == '__main__':
         printlist = list()
         
@@ -190,7 +182,6 @@ if __name__ == '__main__':
 
         printlist.append(slit)
 
-
         eth_diff09 = round(eth_price - eth_price09, 1)
         eth_diff09_d = "ETHUSD(0930) Diff: {}".format(eth_diff09)
         printlist.append(eth_diff09_d)
@@ -204,8 +195,7 @@ if __name__ == '__main__':
         content = '\n'.join(printlist)
         print(content)
         print(".......sending to Discode......")
-        send_discord(content)
-
+        send_to_discord(content)
 
     #except KeyboardInterrupt:
     #    pass
