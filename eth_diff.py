@@ -174,54 +174,9 @@ def build_diff_content():
 
 if __name__ == '__main__':
         printlist = list()
-        
-        slit = "---------"
-        printlist.append(slit)
 
-        dt_now = datetime.datetime.now()
-        dt_now_d = "TIME: {}".format(dt_now.strftime('%Y-%m-%d %H:%M:%S'))
-        # print(dt_now_d)
-        printlist.append(dt_now_d)
-
-        # 先物のリストを取得
-        #cm_futures_client = CMFutures(key=BINANCE_API_KEY, secret=BINANCE_API_SECRET)
-        #client = Client(BINANCE_API_KEY, BINANCE_API_SECRET)
-        #futures_exchange_info = client.futures_exchange_info()  # request info on all futures symbols
-        #trading_pairs = [info['symbol'] for info in futures_exchange_info['symbols']]
-        #print(trading_pairs)
-
-        eth_enter_price_d = "ETH MY ENTER price: {}".format(MY_ENTER_PRICE_ETH)
-        # print(eth_enter_price_d)
-        printlist.append(eth_enter_price_d)
-
-        printlist.append(slit)
-
-        eth_price = get_coin_m_price(ETHUSD_SYMBOL)
-        eth_price_d = "ETHUSD(永久) price: {}".format(eth_price)
-        # print(eth_price_d)
-        printlist.append(eth_price_d)
-
-        eth_price09 = get_coin_m_price(ETH202209_SYMBOL)
-        eth_price09_d = "ETHU2022(0930) price: {}".format(eth_price09)
-        # print(eth_price09_d)
-        printlist.append(eth_price09_d)
-
-        eth_price12 = get_coin_m_price(ETH202212_SYMBOL)
-        eth_price12_d = "ETHUSD(1230) price: {}".format(eth_price12)
-        # print(eth_price12_d)
-        printlist.append(eth_price12_d)
-
-        printlist.append(slit)
-
-        eth_diff09 = round(eth_price - eth_price09, 1)
-        eth_diff09_d = "ETHUSD(0930) Diff: {}".format(eth_diff09)
-        printlist.append(eth_diff09_d)
-
-        eth_diff12 = round(eth_price - eth_price12,1)
-        eth_diff12_d = "ETHUSD(1230) Diff: {}".format(eth_diff12)
-        printlist.append(eth_diff12_d)
-
-        printlist.append(slit)
+        eth_diff_list = build_diff_content()
+        printlist.extend(eth_diff_list)
 
         content = '\n'.join(printlist)
         print(content)
